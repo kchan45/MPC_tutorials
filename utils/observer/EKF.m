@@ -19,7 +19,7 @@ classdef EKF < StateEstimator
             
             self.xhat = zeros(nx,1);
             self.dhat = zeros(nd,1);
-            self.P = eye(nx+nd);
+            self.P = zeros(nx+nd);
             
             import casadi.*
             % create casadi variables

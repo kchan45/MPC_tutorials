@@ -29,9 +29,6 @@ classdef MinimumTimeOCP < OCP
             XN = self.opti.parameter(nx);    % terminal state parameter
             self.opti.set_value(XN, xN);
             
-
-            self.opti.minimize(tf);      % objective; treatment time
-            
             % formulate discrete dynamics using fixed step 
             dt = tf/N; % length of a control interval
             for k = 1:N % loop over control intervals
@@ -59,6 +56,13 @@ classdef MinimumTimeOCP < OCP
             % ---- initial values for solver ---
             self.opti.set_initial(X(1,:), x_init(1));
             self.opti.set_initial(tf, 100);
+            
+            J = tf;
+            for j = 1:N
+                J = J + if_else(X(1,j)>Tmax, X(1,j)-Tmax, 0);
+            end
+            
+            self.opti.minimize(J);      % objective; treatment time
 
             % ---- solve NLP              ------
             p_opts = struct('verbose', 0, ...

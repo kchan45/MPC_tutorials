@@ -109,7 +109,7 @@ function prob_info = offsetfree_load_problem_info(varargin)
     [~, nu] = size(B); % number of inputs (q, P)
     [ny, ~] = size(C); % number of outputs (Ts, I)
     nyc = 1;         % number of controlled outputs
-    nd = 0;          % offset-free disturbances
+    nd = 1;          % offset-free disturbances
     nw = nx;         % process noise
     nv = ny;         % measurement noise
 
@@ -125,8 +125,8 @@ function prob_info = offsetfree_load_problem_info(varargin)
     yc_max = y_max(1);
     v_min = 0*-0.01*ones(nv,1);
     v_max = 0*0.01*ones(nv,1);
-    w_min = 0.25*ones(nw,1);
-    w_max = 0.3*ones(nw,1);
+    w_min = 0.25/ts*ones(nw,1);
+    w_max = 0.3/ts*ones(nw,1);
 
     % initial variable guesses
     u_init = (u_min+u_max)/2;
@@ -161,15 +161,15 @@ function prob_info = offsetfree_load_problem_info(varargin)
     r = Function('r', {ymeas}, {yc});
 
     % plant model
-    xnextp = A*x + B*u + w;
+    xnextp = Ap*x + Bp*u + w;
     fp = Function('fp', {x,u,w}, {xnextp});
 
     % output equation (for plant)
-    yp = C*x + v;
+    yp = Cp*x + v;
     hp = Function('hp', {x,v}, {yp});
 
     % stage cost (reference tracking)
-    Q = 10*eye(nx);
+    Q = 1*eye(nx);
     R = 3*eye(nu);
     lstg = (x-x_ss)' * Q * (x-x_ss) + (u-u_ss)' * R * (u-u_ss);
     lstage = Function('lstage', {x,u,x_ss,u_ss}, {lstg});
@@ -179,7 +179,7 @@ function prob_info = offsetfree_load_problem_info(varargin)
     ltrm = (x-x_ss)' * P * (x-x_ss);
     lterm = Function('lterm', {x, x_ss}, {ltrm});
     
-    term_eq_cons = false;
+    term_eq_cons = true;
     target_penalty = 1e3;
     warm_start = false;
     

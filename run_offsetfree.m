@@ -28,11 +28,19 @@ c = OffsetFreeMPC(prob_info);
 c = c.get_mpc();
 [c, res, feas] = c.solve_mpc(); % do test run
 
+%% set up target tracker
+% note: the rawlings formulation has not been implemented yet
+if strcmpi(offset_style, 'rawlings')
+    tt = TargetTracker(prob_info);
+else
+    tt = [];
+end
+
 %% initialize simulation
 Nsim = ceil(5*60/0.5);
 sim = Simulation(Nsim, prob_info);
 % run simulation
-[sim, sim_data] = sim.run_closed_loop(c, [], ekf, economic_flag, robust_flag, offset_flag);
+[sim, sim_data] = sim.run_closed_loop(c, tt, ekf, economic_flag, robust_flag, offset_flag);
 disp('sim_data fields:')
 disp(fieldnames(sim_data))
 

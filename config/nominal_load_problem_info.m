@@ -155,11 +155,11 @@ function prob_info = nominal_load_problem_info(varargin)
     r = Function('r', {ymeas}, {yc});
 
     % plant model
-    xnextp = A*x + B*u + w;
+    xnextp = Ap*x + Bp*u + w;
     fp = Function('fp', {x,u,w}, {xnextp});
 
     % output equation (for plant)
-    yp = C*x + v;
+    yp = Cp*x + v;
     hp = Function('hp', {x,v}, {yp});
 
     % stage cost (reference tracking)
