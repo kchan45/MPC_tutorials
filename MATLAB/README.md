@@ -37,7 +37,7 @@ The mathematical formulation of the optimal control problem is
 
 ```math
 \begin{align}
-\min_{\mathbf{x},\mathbf{u}} &~~ \|y_{N}-y_{ref}\|_{Q_N} + \sum_{k=0}^{N-1} \|y_{k}-y_{ref}\|_{Q}, \\
+\min_{\mathbf{x},\mathbf{u}} &~~ \|y_{N}-y_{ref}\|_{Q_N}^2 + \sum_{k=0}^{N-1} \|y_{k}-y_{ref}\|_{Q}^2, \\
 \text{s.t.} &~~ x_{k+1} = Ax_k + Bu_k, \\
 &~~ y_k = x_k^1, \\
 &~~ x_0 = x(0), \\
@@ -51,17 +51,22 @@ The mathematical formulation of the optimal control problem is
 **Note:** The current implementation only tracks one of the states, so $y_k = x_k^1 = T_k$.
 
 ### Offset-free MPC
-**TODO: edit** 
-The objective of this controlled system is to track reference values of the temperature, i.e., over a period of time, we wish to control our system to attain desired temperature set points.
+The objective of this controlled system is to track reference values of the temperature *without offset*, i.e., over a period of time, we wish to control our system to attain desired temperature set points *without a gap between our achieved steady state versus the reference*.
 
-The mathematical formulation of the optimal control problem is
+There are two well-established strategies to address offset-free tracking:
+1. Rawlings(and Pannocchia)-style formulation [1](https://doi.org/10.1002/aic.690490213), [2](https://doi.org/10.1109/ECC.2015.7330597), [3](https://doi.org/10.1016/j.ifacol.2015.11.304)
+2. Limon-style formulation [4](https://doi.org/10.1007/978-3-642-01094-1_26), [5](https://doi.org/10.1016/j.automatica.2008.01.023), [6](https://doi.org/10.1109/CDC.2009.5400618)
+
+The tutorial code currently implements the Limon-style, and the Rawlings-style may be added in a future update of this code. The mathematical formulation of the optimal control problem for the Limon-style is
 
 ```math
 \begin{align}
-\min_{\mathbf{x},\mathbf{u}} &~~ \|y_{N}-y_{ref}\|_{Q_N} + \sum_{k=0}^{N-1} \|y_{k}-y_{ref}\|_{Q}, \\
+\min_{\mathbf{u},\theta} &~~ \|x_{N}-x_{s}\|_{Q_N}^2 + \|y_{N}-y_{s}\|_{P_N}^2 + \sum_{k=0}^{N-1} \|x_{k}-x_{s}\|_{Q} + \|u_{k}-u_{s}\|_{R}, \\
 \text{s.t.} &~~ x_{k+1} = Ax_k + Bu_k, \\
-&~~ y_k = x_k^1, \\
 &~~ x_0 = x(0), \\
+&~~ \theta = (x_{s}, u_{s}, y_{s}), \\
+&~~ x_{s} = g_{x}(\theta) = f(x_{s},u_{s}) = Ax_{s} + Bu_{s}, \\
+&~~ y_{s} = g_{y}(\theta) = h(x_{s},u_{s}) = Cx_{s} + Du_{s}, \\
 &~~ [25^\circ\text{C}, 0 \text{ arb. units}]^\top \le x_k \le [45^\circ\text{C}, 80 \text{ arb. units}]^\top, \\
 &~~ [1.5 \text{ W}, 1.5 \text{ SLM}]^\top \le x_k \le [5.0 \text{ W}, 5.0 \text{ SLM}]^\top, \\
 &~~ \mathbf{x} = \{x_k\}_{k=1}^{N}, ~~\mathbf{u} = \{u_k\}_{k=0}^{N-1}, \\
@@ -72,16 +77,19 @@ The mathematical formulation of the optimal control problem is
 **Note:** The current implementation only tracks one of the states, so $y_k = x_k^1 = T_k$.
 
 ### Economic MPC
-**TODO: edit** 
-The objective of this controlled system is to track reference values of the temperature, i.e., over a period of time, we wish to control our system to attain desired temperature set points.
+The objective of this controlled system is to attain a desired "thermal dose" of plasma. The "thermal dose" quantifies the amount of thermal effects delivered to a surface. We use the *cumulative equivalent minutes (CEM)* as the metric to quantify this thermal dose. The CEM is derived from hypothermia treatments and is defined as
+
+```math
+\mathrm{CEM} = \int_{0}^{t} K^{(T_{\mathrm{ref} - T(\tau)})} d\tau,
+```
+where $K$ is a temperature-dependent exponential base that is related to heat transfer properties of a substrate/surface with the plasma. It is relevant to understand that the CEM is *cumulative* (non-decreasing).
 
 The mathematical formulation of the optimal control problem is
 
 ```math
 \begin{align}
-\min_{\mathbf{x},\mathbf{u}} &~~ \|y_{N}-y_{ref}\|_{Q_N} + \sum_{k=0}^{N-1} \|y_{k}-y_{ref}\|_{Q}, \\
+\min_{\mathbf{x},\mathbf{u}} &~~ \|\mathrm{CEM}_{N}-\mathrm{CEM}_{sp}\|^2, \\
 \text{s.t.} &~~ x_{k+1} = Ax_k + Bu_k, \\
-&~~ y_k = x_k^1, \\
 &~~ x_0 = x(0), \\
 &~~ [25^\circ\text{C}, 0 \text{ arb. units}]^\top \le x_k \le [45^\circ\text{C}, 80 \text{ arb. units}]^\top, \\
 &~~ [1.5 \text{ W}, 1.5 \text{ SLM}]^\top \le x_k \le [5.0 \text{ W}, 5.0 \text{ SLM}]^\top, \\
@@ -91,9 +99,11 @@ The mathematical formulation of the optimal control problem is
 ```
 
 ### Multistage MPC
-**TODO: edit** 
-The objective of this controlled system is to track reference values of the temperature, i.e., over a period of time, we wish to control our system to attain desired temperature set points.
+The objective of this controlled system is also to attain a desired "thermal dose" of plasma (see Economic MPC section for details on the definition of the thermal dose). However, multistage (or scenario-based) MPC is considered a "robust" MPC, which explicitly considers uncertainty quantification in the formulation. Multistage MPC considers propagates uncertainty via a scenario tree []().
 
+*Note:* This is not the only robust MPC formulation. An alternative robust MPC formulation (and more common/initial version of robust MPC) is **tube MPC**, which propagates uncertainty of the system as a tube of trajectories.
+
+**TODO: edit**
 The mathematical formulation of the optimal control problem is
 
 ```math
@@ -111,7 +121,7 @@ The mathematical formulation of the optimal control problem is
 
 
 ### Minimum Time MPC
-**TODO: edit** 
+**TODO: edit**
 The objective of this controlled system is to track reference values of the temperature, i.e., over a period of time, we wish to control our system to attain desired temperature set points.
 
 The mathematical formulation of the optimal control problem is
