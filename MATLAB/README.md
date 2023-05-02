@@ -17,3 +17,30 @@ MATLAB Livescripts may be found in the `Live Scripts` folder to provide an "inte
 These scripts are created with a project-oriented view. Thus, the controller, closed-loop simulation, etc. codes are abstracted away to files located under the `utils` folder. To create new controller formulations, you should modify/create your own version of the controller scripts under the `utils` folder. Furthermore, the `config` folder contains scripts that contain problem-specific configurations. As such, those can be used as a template/starting-point when transferring your codes from one system to another.
 
 Example output from the scripts are provided in `example_results.pptx`.
+
+## MPC formulations
+
+This code assumes a linear, state-space model generated from the plasma jet testbed. The two inputs $u$ (manipulated variables) are power (P, in Watts) and carrier gas flow rate (q, in standard liters per minute). The two measured outputs $y$ (control variables, assuming state feedback $y=x$) are maximum surface temperature (T, in degrees Celsius) and total optical emission intensity (I, in arbitrary units).
+
+$$x = [T, I]^\top$$
+$$u = [P, q]^\top$$
+$$x^+ = Ax + Bu$$
+
+where $x^+$ denotes the successor state and $A$ and $B$ are the model matrices obtained through system identification via the `n4sid` function in MATLAB.
+
+### Nominal MPC
+The objective of this controlled system is to track reference values of the temperature, i.e., over a period of time, we wish to control our system to attain desired temperature set points.
+
+The mathematical formulation of the optimal control problem is
+$$
+\begin{align}
+\min_{\mathbf{x},\mathbf{u}} &~~ \|y_{N}-y_{ref}\|_{Q_N} + \sum_{k=0}^{N-1} \|y_{k}-y_{ref}\|_{Q}, \\
+\text{s.t.} &~~ x_{k+1} = Ax_k + Bu_k, \\
+&~~ y_k = x_k^1, \\
+&~~ x_0 = x(0), \\
+&~~ [25^\circ C, 0 \mathrm{arb. units}]^\top \le x_k \le [45^\circ C, 80 \mathrm{arb. units}]^\top, \\
+&~~ [1.5 \mathrm{W}, 1.5 \mathrm{SLM}]^\top \le x_k \le [5.0 \mathrm{W}, 5.0 \mathrm{SLM}]^\top, \\
+&~~ \mathbf{x} = \{x_k\}_{k=1}^{N}, ~~\mathbf{u} = \{u_k\}_{k=0}^{N-1}, \\
+&\quad\quad \forall k = 0, \ldots, N-1,
+$$
+**Note:** The current implementation only tracks one of the states, so $y_k = x_k^1 = T_k$.
