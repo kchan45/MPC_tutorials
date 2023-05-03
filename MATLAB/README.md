@@ -23,7 +23,7 @@ Example output from the scripts are provided in `example_results.pptx`.
 ### Notation
 A controlled system may run indefinitely, but for simulation purposes, we create a finite simulation horizon $N_{sim}$.
 
-For evolution of the states within the simulation horizon (aka as a part of the real trajectory of the true system), the state at time $t$ is denoted as $x(t)$. The inputs and outputs are defined similarly: the input at time $t$ is u(t); the output at time $t$ is $y(t)$.
+For evolution of the states within the simulation horizon (aka as a part of the real trajectory of the true system), the state at time $t$ is denoted as $x(t)$. The inputs and outputs are defined similarly: the input at time $t$ is $u(t)$; the output at time $t$ is $y(t)$.
 
 The state evolution dynamic representation of the true system can be written as
 ```math
@@ -53,7 +53,7 @@ x_{t_1} = x(t_1|t),
 ```
 each of which designates the predicted state at time $t_1$ in the prediction horizon $N$ given the computation of the OCP at time $t$ in the simulation horizon $N_{sim}$.
 
-In multi-state/input/output systems, the $n$-th state is denoted by a superscript, i.e., the first, third, and fifth state at time $t$ are denoted by $x^1(t)$, $x^3(t)$, and $x^5(t)$, respectively, while the first, third, and fifth state *prediction* are denoted by $x_t^1$, $x_t^3$, and $x_t^5$, respectively.
+In multi-state/input/output systems, the $n$-th state is denoted by a superscript, i.e., the first, third, and fifth state at time $t$ in the simulation horizon are denoted by $x^1(t)$, $x^3(t)$, and $x^5(t)$, respectively, while the first, third, and fifth state *prediction* at time $t$ of the prediction horizon are denoted by $x_t^1$, $x_t^3$, and $x_t^5$, respectively.
 
 ### System/Problem Information
 This code assumes a linear, state-space model generated from the plasma jet testbed. The two inputs $u$ (manipulated variables) are power ($P$, in Watts) and carrier gas flow rate ($q$, in standard liters per minute). The two measured outputs $y$ (control variables, assuming state feedback $y=x$) are maximum surface temperature ($T$, in degrees Celsius) and total optical emission intensity ($I$, in arbitrary units).
