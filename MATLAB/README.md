@@ -20,6 +20,42 @@ Example output from the scripts are provided in `example_results.pptx`.
 
 ## MPC formulations
 
+### Notation
+A controlled system may run indefinitely, but for simulation purposes, we create a finite simulation horizon $N_{sim}$.
+
+For evolution of the states within the simulation horizon (aka as a part of the real trajectory of the true system), the state at time $t$ is denoted as $x(t)$. The inputs and outputs are defined similarly: the input at time $t$ is u(t); the output at time $t$ is $y(t)$.
+
+The state evolution dynamic representation of the true system can be written as
+```math
+x(t+\Delta t) = f_p(x(t), u(t)),
+```
+and the output representation of the true system can be written as
+```math
+y(t) = h_p(x(t), u(t)),
+```
+where no assumptions are made on noise, disturbances, uncertainty, etc.
+
+MPC solves an optimal control problem (OCP) at every time instant of the simulation horizon in order to obtain an optimal trajectory of inputs. Thus, it utilizes a model to predict the future states and outputs (as a result of applying certain inputs). Often, the prediction is made up until some user-defined prediction horizon $N\le N_{sim}$.
+
+For the prediction of the states within an OCP, the state evolution model is denoted as
+```math
+x_{t+\Delta t} = f(x_{t}, u_{t}),
+```
+and the output model is denoted with
+```math
+y_{t} = h(x_{t}, u_{t}),
+```
+where a prediction is denoted with a subscripted time instant.
+
+The following are equivalent exemplify the connection between the two notations
+```math
+x_{t_1} = x(t_1|t),
+```
+each of which designates the predicted state at time $t_1$ in the prediction horizon $N$ given the computation of the OCP at time $t$ in the simulation horizon $N_{sim}$.
+
+In multi-state/input/output systems, the $n$-th state is denoted by a superscript, i.e., the first, third, and fifth state at time $t$ are denoted by $x^1(t)$, $x^3(t)$, and $x^5(t)$, respectively, while the first, third, and fifth state *prediction* are denoted by $x_t^1$, $x_t^3$, and $x_t^5$, respectively.
+
+### System/Problem Information
 This code assumes a linear, state-space model generated from the plasma jet testbed. The two inputs $u$ (manipulated variables) are power ($P$, in Watts) and carrier gas flow rate ($q$, in standard liters per minute). The two measured outputs $y$ (control variables, assuming state feedback $y=x$) are maximum surface temperature ($T$, in degrees Celsius) and total optical emission intensity ($I$, in arbitrary units).
 
 $$x = [T, I]^\top$$
@@ -29,6 +65,19 @@ $$u = [P, q]^\top$$
 $$x^+ = Ax + Bu$$
 
 where $x^+$ denotes the successor state and $A$ and $B$ are the model matrices obtained through system identification via the `n4sid` function in MATLAB.
+
+The states are constrained as
+
+$$x_{\min} = [25^\circ\text{C}, 0 \text{ arb. units}]^\top$$
+
+$$x_{\max} = [45^\circ\text{C}, 80 \text{ arb. units}]^\top$$
+
+The inputs are constrained as
+
+$$u_{\min} = [1.5 \text{ W}, 1.5 \text{ SLM}]^\top$$
+
+$$u_{\max} = [5.0 \text{ W}, 5.0 \text{ SLM}]^\top$$
+
 
 ### Nominal (Tracking) MPC
 The objective of this controlled system is to track reference values of the temperature, i.e., over a period of time, we wish to control our system to attain desired temperature set points.
@@ -41,8 +90,8 @@ The mathematical formulation of the optimal control problem is
 \text{s.t.} &~~ x_{k+1} = Ax_k + Bu_k, \\
 &~~ y_k = x_k^1, \\
 &~~ x_0 = x(0), \\
-&~~ [25^\circ\text{C}, 0 \text{ arb. units}]^\top \le x_k \le [45^\circ\text{C}, 80 \text{ arb. units}]^\top, \\
-&~~ [1.5 \text{ W}, 1.5 \text{ SLM}]^\top \le x_k \le [5.0 \text{ W}, 5.0 \text{ SLM}]^\top, \\
+&~~ x_{\min}^\top \le x_k \le x_{\max}, \\
+&~~ u_{\min} \le u_k \le u_{\max}, \\
 &~~ \mathbf{x} = \{x_k\}_{k=1}^{N}, ~~\mathbf{u} = \{u_k\}_{k=0}^{N-1}, \\
 &\quad\quad \forall k = 0, \ldots, N-1,
 \end{align}
@@ -80,7 +129,7 @@ The tutorial code currently implements the Limon-style, and the Rawlings-style m
 The objective of this controlled system is to attain a desired "thermal dose" of plasma. The "thermal dose" quantifies the amount of thermal effects delivered to a surface. We use the *cumulative equivalent minutes (CEM)* as the metric to quantify this thermal dose. The CEM is derived from hypothermia treatments and is defined as
 
 ```math
-\mathrm{CEM} = \int_{0}^{t} K^{(T_{\mathrm{ref} - T(\tau)})} d\tau,
+\mathrm{CEM}(t) = \int_{0}^{t} K^{(T_{\mathrm{ref}} - T(\tau))} d\tau,
 ```
 where $K$ is a temperature-dependent exponential base that is related to heat transfer properties of a substrate/surface with the plasma. It is relevant to understand that the CEM is *cumulative* (non-decreasing).
 
