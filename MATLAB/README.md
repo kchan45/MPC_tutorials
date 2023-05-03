@@ -86,11 +86,11 @@ The mathematical formulation of the optimal control problem is
 
 ```math
 \begin{align}
-\min_{\mathbf{x},\mathbf{u}} &~~ \|y_{N}-y_{ref}\|_{Q_N}^2 + \sum_{k=0}^{N-1} \|y_{k}-y_{ref}\|_{Q}^2, \\
+\min_{\mathbf{x},\mathbf{u}} &~~ \|y_{N}-y_{sp}\|_{Q_N}^2 + \sum_{k=0}^{N-1} \|y_{k}-y_{sp}\|_{Q}^2, \\
 \text{s.t.} &~~ x_{k+1} = Ax_k + Bu_k, \\
 &~~ y_k = x_k^1, \\
 &~~ x_0 = x(0), \\
-&~~ x_{\min}^\top \le x_k \le x_{\max}, \\
+&~~ x_{\min} \le x_k \le x_{\max}, \\
 &~~ u_{\min} \le u_k \le u_{\max}, \\
 &~~ \mathbf{x} = \{x_k\}_{k=1}^{N}, ~~\mathbf{u} = \{u_k\}_{k=0}^{N-1}, \\
 &\quad\quad \forall k = 0, \ldots, N-1,
@@ -116,8 +116,8 @@ The tutorial code currently implements the Limon-style, and the Rawlings-style m
 &~~ \theta = (x_{s}, u_{s}, y_{s}), \\
 &~~ x_{s} = g_{x}(\theta) = f(x_{s},u_{s}) = Ax_{s} + Bu_{s}, \\
 &~~ y_{s} = g_{y}(\theta) = h(x_{s},u_{s}) = Cx_{s} + Du_{s}, \\
-&~~ [25^\circ\text{C}, 0 \text{ arb. units}]^\top \le x_k \le [45^\circ\text{C}, 80 \text{ arb. units}]^\top, \\
-&~~ [1.5 \text{ W}, 1.5 \text{ SLM}]^\top \le x_k \le [5.0 \text{ W}, 5.0 \text{ SLM}]^\top, \\
+&~~ x_{\min} \le x_k \le x_{\max}, \\
+&~~ u_{\min} \le u_k \le u_{\max}, \\
 &~~ \mathbf{x} = \{x_k\}_{k=1}^{N}, ~~\mathbf{u} = \{u_k\}_{k=0}^{N-1}, \\
 &\quad\quad \forall k = 0, \ldots, N-1,
 \end{align}
@@ -140,12 +140,14 @@ The mathematical formulation of the optimal control problem is
 \min_{\mathbf{x},\mathbf{u}} &~~ \|\mathrm{CEM}_{N}-\mathrm{CEM}_{sp}\|^2, \\
 \text{s.t.} &~~ x_{k+1} = Ax_k + Bu_k, \\
 &~~ x_0 = x(0), \\
-&~~ [25^\circ\text{C}, 0 \text{ arb. units}]^\top \le x_k \le [45^\circ\text{C}, 80 \text{ arb. units}]^\top, \\
-&~~ [1.5 \text{ W}, 1.5 \text{ SLM}]^\top \le x_k \le [5.0 \text{ W}, 5.0 \text{ SLM}]^\top, \\
+&~~ x_{\min} \le x_k \le x_{\max}, \\
+&~~ u_{\min} \le u_k \le u_{\max}, \\
 &~~ \mathbf{x} = \{x_k\}_{k=1}^{N}, ~~\mathbf{u} = \{u_k\}_{k=0}^{N-1}, \\
 &\quad\quad \forall k = 0, \ldots, N-1,
 \end{align}
 ```
+
+**Note** that because the CEM is cumulative, it is sufficient to formulate the objective as a terminal cost (i.e., relying only on the final state/output).
 
 ### Multistage MPC
 The objective of this controlled system is also to attain a desired "thermal dose" of plasma (see Economic MPC section for details on the definition of the thermal dose). However, multistage (or scenario-based) MPC is considered a "robust" MPC, which explicitly considers uncertainty quantification in the formulation. Multistage MPC considers propagates uncertainty via a scenario tree []().
@@ -161,8 +163,8 @@ The mathematical formulation of the optimal control problem is
 \text{s.t.} &~~ x_{k+1} = Ax_k + Bu_k, \\
 &~~ y_k = x_k^1, \\
 &~~ x_0 = x(0), \\
-&~~ [25^\circ\text{C}, 0 \text{ arb. units}]^\top \le x_k \le [45^\circ\text{C}, 80 \text{ arb. units}]^\top, \\
-&~~ [1.5 \text{ W}, 1.5 \text{ SLM}]^\top \le x_k \le [5.0 \text{ W}, 5.0 \text{ SLM}]^\top, \\
+&~~ x_{\min} \le x_k \le x_{\max}, \\
+&~~ u_{\min} \le u_k \le u_{\max}, \\
 &~~ \mathbf{x} = \{x_k\}_{k=1}^{N}, ~~\mathbf{u} = \{u_k\}_{k=0}^{N-1}, \\
 &\quad\quad \forall k = 0, \ldots, N-1,
 \end{align}
@@ -181,8 +183,8 @@ The mathematical formulation of the optimal control problem is
 \text{s.t.} &~~ x_{k+1} = Ax_k + Bu_k, \\
 &~~ y_k = x_k^1, \\
 &~~ x_0 = x(0), \\
-&~~ [25^\circ\text{C}, 0 \text{ arb. units}]^\top \le x_k \le [45^\circ\text{C}, 80 \text{ arb. units}]^\top, \\
-&~~ [1.5 \text{ W}, 1.5 \text{ SLM}]^\top \le x_k \le [5.0 \text{ W}, 5.0 \text{ SLM}]^\top, \\
+&~~ x_{\min} \le x_k \le x_{\max}, \\
+&~~ u_{\min} \le u_k \le u_{\max}, \\
 &~~ \mathbf{x} = \{x_k\}_{k=1}^{N}, ~~\mathbf{u} = \{u_k\}_{k=0}^{N-1}, \\
 &\quad\quad \forall k = 0, \ldots, N-1,
 \end{align}
