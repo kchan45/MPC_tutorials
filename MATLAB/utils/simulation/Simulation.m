@@ -174,7 +174,7 @@ classdef Simulation
                 ctime(k) = toc(startTime);
                 if mpc_controller
                     if ~feas
-                        fprintf('Was not feasible on iteration %d of simulation',k)
+                        fprintf('Was not feasible on iteration %d of simulation\n',k)
                     end
                 end
 

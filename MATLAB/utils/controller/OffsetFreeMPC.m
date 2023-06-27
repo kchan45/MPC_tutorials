@@ -295,15 +295,16 @@ classdef OffsetFreeMPC < MPC
             catch e
                 % if solve fails, get the last value
                 feas = 0;
+                disp(e.message)
                 
                 for i = 1:length(fldnames)
                     if strcmpi(fldnames{i}, 'U')
                         u = self.opti.debug.value(self.opti_vars.(fldnames{i}){1});
                         res.(fldnames{i}) = max(min(u,u_max),u_min);
                     elseif isa(self.opti_vars.(fldnames{i}),'cell')
-                        res.(fldnames{i}) = cell2mat(cellfun(@self.opti.debug.value,self.opti_vars.(fldnames{i}),'UniformOutput',false)');
+                        res.(fldnames{i}) = cell2mat(cellfun(@(x)self.opti.debug.value(x),self.opti_vars.(fldnames{i}),'UniformOutput',false)');
                     else
-                        res.(fldnames{i}) = sol.value(self.opti_vars.(fldnames{i}));
+                        res.(fldnames{i}) = self.opti.debug.value(self.opti_vars.(fldnames{i}));
                     end
                 end
 
